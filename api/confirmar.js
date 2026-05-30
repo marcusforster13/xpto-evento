@@ -602,11 +602,6 @@
       el.classList.add('active');
       document.getElementById('game-section').style.display = campSel === 'sim' ? 'block' : 'none';
       if (campSel === 'nao') { gameSel = ''; gameMode = ''; resetGameCards(); }
-      if (campSel === 'sim' && window.innerWidth < 768) {
-        setTimeout(function() {
-          document.getElementById('game-section').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-        }, 50);
-      }
     }
 
     function selectGame(jogo) {
