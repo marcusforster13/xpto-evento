@@ -23,12 +23,14 @@
       padding: 12px 16px;
     }
 
+    /* Corner brackets */
     .corner { position: fixed; width: 48px; height: 48px; opacity: .45; pointer-events: none; }
     .corner.tl { top: 0; left: 0; border-top: 2px solid #00d3e4; border-left: 2px solid #00d3e4; }
     .corner.tr { top: 0; right: 0; border-top: 2px solid #00d3e4; border-right: 2px solid #00d3e4; }
     .corner.bl { bottom: 0; left: 0; border-bottom: 2px solid #00d3e4; border-left: 2px solid #00d3e4; }
     .corner.br { bottom: 0; right: 0; border-bottom: 2px solid #00d3e4; border-right: 2px solid #00d3e4; }
 
+    /* Main layout */
     .page {
       width: 100%;
       max-width: 900px;
@@ -39,6 +41,7 @@
       align-items: start;
     }
 
+    /* ── LEFT COLUMN ── */
     .col-left {
       grid-column: 1;
       grid-row: 1 / 4;
@@ -63,8 +66,10 @@
       opacity: .8;
     }
 
+    /* SVG logo */
     .logo-svg { width: 260px; height: auto; }
 
+    .hero { }
     .hero h1 {
       font-family: 'Barlow Condensed', sans-serif;
       font-weight: 900;
@@ -97,6 +102,7 @@
       font-weight: 700;
     }
 
+    /* Info strip */
     .info-strip {
       background: rgba(0,211,228,.07);
       border: 1px solid rgba(0,211,228,.22);
@@ -141,6 +147,7 @@
       text-transform: uppercase;
     }
 
+    /* Tags */
     .tags-row {
       display: flex;
       gap: 14px;
@@ -164,6 +171,7 @@
 
     .footer-line { color: #3a3a3a; font-size: 9px; letter-spacing: 2px; text-transform: uppercase; margin-top: 4px; }
 
+    /* ── RIGHT COLUMN ── */
     .col-right {
       grid-column: 2;
       grid-row: 1 / 4;
@@ -213,8 +221,10 @@
     }
     .field select option { background: #1e1e1e; color: #fff; }
 
+    /* Two-column fields */
     .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
 
+    /* People counter */
     .people-counter {
       display: flex;
       align-items: center;
@@ -253,6 +263,7 @@
       line-height: 38px;
     }
 
+    /* Tipo buttons */
     .tipo-label { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: #999; margin-bottom: 8px; }
     .tipo-row { display: flex; gap: 6px; }
     .tipo-btn {
@@ -272,41 +283,53 @@
     }
     .tipo-btn.active { background: #00d3e4; border-color: #00d3e4; color: #000; }
 
-    .intol-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 6px;
-    }
-    .intol-check {
-      display: flex;
-      align-items: center;
-      gap: 7px;
-      padding: 7px 10px;
+
+
+    /* Game selection */
+    .game-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 4px; }
+    .game-card {
+      border: 1px solid rgba(0,211,228,.2);
+      border-radius: 6px;
       background: rgba(255,255,255,.04);
-      border: 1px solid rgba(0,211,228,.15);
-      border-radius: 4px;
+      padding: 10px 12px;
       cursor: pointer;
       transition: all .15s;
     }
-    .intol-check:hover { border-color: rgba(0,211,228,.4); }
-    .intol-check.checked { background: rgba(0,211,228,.1); border-color: rgba(0,211,228,.5); }
-    .intol-check input[type="checkbox"] { display: none; }
-    .intol-box {
-      width: 14px;
-      height: 14px;
-      border: 1.5px solid rgba(0,211,228,.4);
-      border-radius: 2px;
+    .game-card:hover { border-color: rgba(0,211,228,.45); }
+    .game-card.selected { background: rgba(0,211,228,.1); border-color: rgba(0,211,228,.6); }
+    .game-card-title {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 800;
+      font-size: 13px;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: #fff;
+      margin-bottom: 6px;
+    }
+    .game-card-opts { display: flex; flex-direction: column; gap: 4px; }
+    .game-opt {
       display: flex;
       align-items: center;
-      justify-content: center;
+      gap: 6px;
+      font-size: 11px;
+      color: #aaa;
+      letter-spacing: .5px;
+      cursor: pointer;
+    }
+    .game-opt input[type="radio"] { display: none; }
+    .game-radio {
+      width: 12px; height: 12px;
+      border: 1.5px solid rgba(0,211,228,.4);
+      border-radius: 50%;
       flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
       transition: all .15s;
     }
-    .intol-check.checked .intol-box { background: #00d3e4; border-color: #00d3e4; }
-    .intol-check.checked .intol-box::after { content: '✓'; font-size: 9px; color: #000; font-weight: 900; }
-    .intol-text { font-family: 'Barlow Condensed', sans-serif; font-size: 12px; letter-spacing: 1px; text-transform: uppercase; color: #ccc; }
+    .game-opt.checked .game-radio { border-color: #00d3e4; background: #00d3e4; }
+    .game-opt.checked .game-radio::after { content: ''; width: 5px; height: 5px; background: #000; border-radius: 50%; }
+    .game-opt.checked { color: #fff; }
 
-    .submit-btn {
+    
       width: 100%;
       margin-top: 14px;
       padding: 14px;
@@ -325,6 +348,7 @@
     .submit-btn:disabled { opacity: .3; cursor: not-allowed; }
     .submit-btn:not(:disabled):hover { opacity: .85; }
 
+    /* States */
     .state-loading { text-align: center; padding: 32px 0; }
     .spinner {
       width: 40px; height: 40px;
@@ -353,23 +377,9 @@
       font-size: 12px; letter-spacing: 2px; text-transform: uppercase; cursor: pointer;
     }
 
-    .section-divider {
-      font-size: 10px;
-      letter-spacing: 2px;
-      text-transform: uppercase;
-      color: #444;
-      margin-bottom: 8px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .section-divider::before, .section-divider::after {
-      content: '';
-      flex: 1;
-      height: 1px;
-      background: rgba(0,211,228,.1);
-    }
 
+
+    /* Responsive */
     @media (max-width: 640px) {
       html, body { overflow: auto; height: auto; }
       .page { grid-template-columns: 1fr; }
@@ -389,7 +399,9 @@
 
   <div class="page">
 
+    <!-- LEFT COLUMN -->
     <div class="col-left">
+
       <header>
         <svg class="logo-svg" viewBox="0 0 900 420" xmlns="http://www.w3.org/2000/svg" fill="none">
           <style>.l3{fill:#00d3e4}</style>
@@ -397,6 +409,8 @@
         </svg>
         <p class="convida">Convida para</p>
       </header>
+
+
 
       <div class="info-strip">
         <div class="info-cell">
@@ -433,8 +447,10 @@
       </div>
 
       <p class="footer-line">Vamos jogar e assistir o jogo juntos</p>
+
     </div>
 
+    <!-- RIGHT COLUMN -->
     <div class="col-right">
       <div class="card">
         <div id="card-inner">
@@ -446,16 +462,22 @@
           </div>
 
           <div class="field">
-            <label for="inp-empresa">Empresa <span style="color:#555;font-size:9px;letter-spacing:1px;">(opcional)</span></label>
-            <input type="text" id="inp-empresa" placeholder="Nome da empresa" autocomplete="organization" />
-          </div>
-
-          <div class="field">
             <label for="inp-email">E-mail</label>
             <input type="email" id="inp-email" placeholder="seu@email.com" autocomplete="email" />
           </div>
 
-          <div style="margin-bottom:12px;">
+          <div class="field-row">
+            <div class="field" style="margin-bottom:0;">
+              <label for="inp-empresa">Empresa</label>
+              <input type="text" id="inp-empresa" placeholder="Nome da empresa" />
+            </div>
+            <div class="field" style="margin-bottom:0;">
+              <label for="inp-telefone">Telefone</label>
+              <input type="tel" id="inp-telefone" placeholder="(11) 99999-9999" />
+            </div>
+          </div>
+
+          <div style="margin-bottom:12px; margin-top:12px;">
             <div class="tipo-label">Você é</div>
             <div class="tipo-row">
               <button class="tipo-btn" data-tipo="cliente"     onclick="selectTipo(this)">Cliente</button>
@@ -464,6 +486,7 @@
             </div>
           </div>
 
+          <!-- People count -->
           <div class="field">
             <label>Quantas pessoas vão com você?</label>
             <div class="people-counter">
@@ -473,43 +496,54 @@
             </div>
           </div>
 
-          <div class="section-divider">Intolerâncias alimentares</div>
-          <div class="intol-grid" id="intol-grid">
-            <div class="intol-check" onclick="toggleIntol(this)">
-              <input type="checkbox" value="gluten" />
-              <div class="intol-box"></div>
-              <span class="intol-text">🌾 Glúten</span>
-            </div>
-            <div class="intol-check" onclick="toggleIntol(this)">
-              <input type="checkbox" value="lactose" />
-              <div class="intol-box"></div>
-              <span class="intol-text">🥛 Lactose</span>
-            </div>
-            <div class="intol-check" onclick="toggleIntol(this)">
-              <input type="checkbox" value="vegetariano" />
-              <div class="intol-box"></div>
-              <span class="intol-text">🥗 Vegetariano</span>
-            </div>
-            <div class="intol-check" onclick="toggleIntol(this)">
-              <input type="checkbox" value="vegano" />
-              <div class="intol-box"></div>
-              <span class="intol-text">🌱 Vegano</span>
-            </div>
-            <div class="intol-check" onclick="toggleIntol(this)">
-              <input type="checkbox" value="frutos_mar" />
-              <div class="intol-box"></div>
-              <span class="intol-text">🦐 Frutos do Mar</span>
-            </div>
-            <div class="intol-check" onclick="toggleIntol(this)">
-              <input type="checkbox" value="amendoim" />
-              <div class="intol-box"></div>
-              <span class="intol-text">🥜 Amendoim</span>
+          <div class="field" style="margin-top:10px; margin-bottom:0;">
+            <label for="inp-obs">Observações (opcional)</label>
+            <textarea id="inp-obs" placeholder="Alguma informação adicional..."></textarea>
+          </div>
+
+          <div style="margin-bottom:0; margin-top:12px;">
+            <div class="tipo-label">Vai participar do campeonato de videogame? 🎮</div>
+            <div class="tipo-row">
+              <button class="tipo-btn" data-camp="sim"  onclick="selectCamp(this)">Sim, tô dentro!</button>
+              <button class="tipo-btn" data-camp="nao"  onclick="selectCamp(this)">Só vou assistir</button>
             </div>
           </div>
 
-          <div class="field" style="margin-top:10px; margin-bottom:0;">
-            <label for="inp-obs">Outra restrição? (opcional)</label>
-            <textarea id="inp-obs" placeholder="Ex: alergia a ovo, sem cebola..."></textarea>
+          <!-- Game selection (shown only when campeonato = sim) -->
+          <div id="game-section" style="display:none; margin-top:12px;">
+            <div class="tipo-label">Qual jogo você vai jogar?</div>
+            <div class="game-grid">
+
+              <!-- CS -->
+              <div class="game-card" id="card-cs" onclick="selectGame('cs')">
+                <div class="game-card-title">🎯 Counter-Strike</div>
+                <div class="game-card-opts">
+                  <label class="game-opt" id="opt-cs-duo" onclick="event.stopPropagation(); selectGameMode('cs','duo')">
+                    <input type="radio" name="cs-mode" value="duo" />
+                    <div class="game-radio"></div>
+                    Duo (2 jogadores)
+                  </label>
+                  <label class="game-opt" id="opt-cs-squad" onclick="event.stopPropagation(); selectGameMode('cs','squad')">
+                    <input type="radio" name="cs-mode" value="squad" />
+                    <div class="game-radio"></div>
+                    Squad (4 jogadores)
+                  </label>
+                </div>
+              </div>
+
+              <!-- FIFA -->
+              <div class="game-card" id="card-fifa" onclick="selectGame('fifa')">
+                <div class="game-card-title">⚽ FIFA</div>
+                <div class="game-card-opts">
+                  <label class="game-opt" id="opt-fifa-solo" onclick="event.stopPropagation(); selectGameMode('fifa','solo')">
+                    <input type="radio" name="fifa-mode" value="solo" />
+                    <div class="game-radio"></div>
+                    Individual (1 jogador)
+                  </label>
+                </div>
+              </div>
+
+            </div>
           </div>
 
           <button class="submit-btn" id="submit-btn" disabled onclick="enviar()">
@@ -519,10 +553,13 @@
       </div>
     </div>
 
-  </div>
+  </div><!-- .page -->
 
   <script>
     var tipoSel = '';
+    var campSel = '';
+    var gameSel = '';      // 'cs' ou 'fifa'
+    var gameMode = '';     // 'duo', 'squad', 'solo'
     var numPessoas = 1;
 
     function changePeople(delta) {
@@ -530,17 +567,40 @@
       document.getElementById('people-num').textContent = numPessoas;
     }
 
-    function toggleIntol(el) {
-      var cb = el.querySelector('input[type="checkbox"]');
-      cb.checked = !cb.checked;
-      el.classList.toggle('checked', cb.checked);
-    }
-
     function selectTipo(el) {
       tipoSel = el.dataset.tipo;
-      document.querySelectorAll('.tipo-btn').forEach(function(b) { b.classList.remove('active'); });
+      document.querySelectorAll('.tipo-btn[data-tipo]').forEach(function(b) { b.classList.remove('active'); });
       el.classList.add('active');
       checkForm();
+    }
+
+    function selectCamp(el) {
+      campSel = el.dataset.camp;
+      document.querySelectorAll('.tipo-btn[data-camp]').forEach(function(b) { b.classList.remove('active'); });
+      el.classList.add('active');
+      document.getElementById('game-section').style.display = campSel === 'sim' ? 'block' : 'none';
+      if (campSel === 'nao') { gameSel = ''; gameMode = ''; resetGameCards(); }
+    }
+
+    function selectGame(jogo) {
+      gameSel = jogo;
+      gameMode = '';
+      document.querySelectorAll('.game-card').forEach(function(c) { c.classList.remove('selected'); });
+      document.getElementById('card-' + jogo).classList.add('selected');
+      document.querySelectorAll('.game-opt').forEach(function(o) { o.classList.remove('checked'); });
+    }
+
+    function selectGameMode(jogo, modo) {
+      selectGame(jogo);
+      gameMode = modo;
+      var optId = 'opt-' + jogo + '-' + modo;
+      document.querySelectorAll('#card-' + jogo + ' .game-opt').forEach(function(o) { o.classList.remove('checked'); });
+      document.getElementById(optId).classList.add('checked');
+    }
+
+    function resetGameCards() {
+      document.querySelectorAll('.game-card').forEach(function(c) { c.classList.remove('selected'); });
+      document.querySelectorAll('.game-opt').forEach(function(o) { o.classList.remove('checked'); });
     }
 
     function checkForm() {
@@ -551,11 +611,6 @@
 
     document.getElementById('inp-nome').addEventListener('input', checkForm);
     document.getElementById('inp-email').addEventListener('input', checkForm);
-
-    function getIntolerances() {
-      var checked = document.querySelectorAll('#intol-grid input[type="checkbox"]:checked');
-      return Array.from(checked).map(function(c) { return c.value; });
-    }
 
     function showLoading() {
       document.getElementById('card-inner').innerHTML =
@@ -588,9 +643,11 @@
     }
 
     async function enviar() {
-      var nome  = document.getElementById('inp-nome').value.trim();
-      var email = document.getElementById('inp-email').value.trim();
-      var obs   = document.getElementById('inp-obs').value.trim();
+      var nome     = document.getElementById('inp-nome').value.trim();
+      var email    = document.getElementById('inp-email').value.trim();
+      var empresa  = document.getElementById('inp-empresa').value.trim();
+      var telefone = document.getElementById('inp-telefone').value.trim();
+      var obs      = document.getElementById('inp-obs').value.trim();
 
       showLoading();
 
@@ -601,10 +658,13 @@
           body: JSON.stringify({
             nome: nome,
             email: email,
-            empresa: document.getElementById('inp-empresa').value.trim(),
             tipo: tipoSel,
             pessoas: numPessoas,
-            'intolerâncias': getIntolerances(),
+            empresa: empresa,
+            telefone: telefone,
+            campeonato: campSel,
+            jogo: gameSel,
+            jogo_modo: gameMode,
             observacoes: obs
           })
         });
