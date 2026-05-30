@@ -20,24 +20,8 @@ async function sendEmail({ to, subject, html }) {
   return res.json();
 }
 
-function intoleranceLabel(key) {
-  const map = {
-    gluten: '🌾 Glúten',
-    lactose: '🥛 Lactose',
-    vegetariano: '🥗 Vegetariano',
-    vegano: '🌱 Vegano',
-    frutos_mar: '🦐 Frutos do Mar',
-    amendoim: '🥜 Amendoim',
-  };
-  return map[key] || key;
-}
-
 // ── Email para o convidado ──────────────────────────────────────────────────
-function emailConvidado(nome, pessoas, intolerances, obs) {
-  const intolHtml = intolerances.length
-    ? `<p style="margin:0 0 6px;color:#999;font-size:13px;text-transform:uppercase;letter-spacing:1px;">Restrições registradas</p>
-       <p style="margin:0 0 20px;color:#fff;font-size:15px;">${intolerances.map(intoleranceLabel).join(' &nbsp;|&nbsp; ')}</p>`
-    : '';
+function emailConvidado(nome, pessoas, obs) {
   const obsHtml = obs
     ? `<p style="margin:0 0 6px;color:#999;font-size:13px;text-transform:uppercase;letter-spacing:1px;">Observação</p>
        <p style="margin:0 0 20px;color:#fff;font-size:15px;">${obs}</p>`
@@ -91,7 +75,6 @@ function emailConvidado(nome, pessoas, intolerances, obs) {
               </tr>
             </table>
 
-            ${intolHtml}
             ${obsHtml}
 
             <p style="margin:0;color:#555;font-size:12px;text-align:center;letter-spacing:1px;text-transform:uppercase;">Vamos jogar e assistir o jogo juntos 🔥</p>
@@ -113,10 +96,7 @@ function emailConvidado(nome, pessoas, intolerances, obs) {
 }
 
 // ── Email para o time (Mariana) ─────────────────────────────────────────────
-function emailTime(nome, email, tipo, pessoas, intolerances, obs) {
-  const intolList = intolerances.length
-    ? intolerances.map(intoleranceLabel).join(', ')
-    : 'Nenhuma';
+function emailTime(nome, email, tipo, pessoas, obs, empresa, telefone, campeonato) {
   const now = new Date().toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' });
 
   return `<!DOCTYPE html>
@@ -147,16 +127,20 @@ function emailTime(nome, email, tipo, pessoas, intolerances, obs) {
                 <td style="padding:10px 16px;color:#111;border-top:1px solid #eee;"><a href="mailto:${email}" style="color:#00a0b0;">${email}</a></td>
               </tr>
               <tr style="background:#fafafa;">
-                <td style="padding:10px 16px;color:#888;font-weight:600;text-transform:uppercase;font-size:11px;letter-spacing:1px;border-top:1px solid #eee;">Tipo</td>
-                <td style="padding:10px 16px;color:#111;border-top:1px solid #eee;text-transform:capitalize;">${tipo}</td>
+                <td style="padding:10px 16px;color:#888;font-weight:600;text-transform:uppercase;font-size:11px;letter-spacing:1px;border-top:1px solid #eee;">Campeonato 🎮</td>
+                <td style="padding:10px 16px;color:#111;border-top:1px solid #eee;">${campeonato === 'sim' ? '✅ Vai participar' : campeonato === 'nao' ? '👀 Só vai assistir' : '—'}</td>
               </tr>
               <tr>
-                <td style="padding:10px 16px;color:#888;font-weight:600;text-transform:uppercase;font-size:11px;letter-spacing:1px;border-top:1px solid #eee;">Pessoas</td>
-                <td style="padding:10px 16px;color:#111;border-top:1px solid #eee;">${pessoas}</td>
+                <td style="padding:10px 16px;color:#888;font-weight:600;text-transform:uppercase;font-size:11px;letter-spacing:1px;border-top:1px solid #eee;">Empresa</td>
+                <td style="padding:10px 16px;color:#111;border-top:1px solid #eee;">${empresa || '—'}</td>
+              </tr>
+              <tr>
+                <td style="padding:10px 16px;color:#888;font-weight:600;text-transform:uppercase;font-size:11px;letter-spacing:1px;border-top:1px solid #eee;">Telefone</td>
+                <td style="padding:10px 16px;color:#111;border-top:1px solid #eee;">${telefone || '—'}</td>
               </tr>
               <tr style="background:#fafafa;">
-                <td style="padding:10px 16px;color:#888;font-weight:600;text-transform:uppercase;font-size:11px;letter-spacing:1px;border-top:1px solid #eee;">Intolerâncias</td>
-                <td style="padding:10px 16px;color:#111;border-top:1px solid #eee;">${intolList}</td>
+                <td style="padding:10px 16px;color:#888;font-weight:600;text-transform:uppercase;font-size:11px;letter-spacing:1px;border-top:1px solid #eee;">Pessoas</td>
+                <td style="padding:10px 16px;color:#111;border-top:1px solid #eee;">${pessoas}</td>
               </tr>
               ${obs ? `<tr>
                 <td style="padding:10px 16px;color:#888;font-weight:600;text-transform:uppercase;font-size:11px;letter-spacing:1px;border-top:1px solid #eee;">Observação</td>
@@ -192,7 +176,7 @@ export default async function handler(req) {
     return new Response(JSON.stringify({ error: 'JSON inválido' }), { status: 400 });
   }
 
-  const { nome, email, tipo, pessoas = 1, 'intolerâncias': intolerances = [], observacoes = '' } = body;
+  const { nome, email, tipo, pessoas = 1, observacoes = '', empresa = '', telefone = '', campeonato = '' } = body;
 
   if (!nome || !email || !tipo) {
     return new Response(JSON.stringify({ error: 'Campos obrigatórios faltando.' }), { status: 400 });
@@ -204,13 +188,13 @@ export default async function handler(req) {
       sendEmail({
         to: email,
         subject: `${nome}, sua presença está confirmada! 🎮⚽`,
-        html: emailConvidado(nome, pessoas, intolerances, observacoes),
+        html: emailConvidado(nome, pessoas, observacoes),
       }),
       // 2. Notificação para o time
       sendEmail({
         to: EMAIL_TEAM,
         subject: `[Evento 13.06] Nova confirmação: ${nome}`,
-        html: emailTime(nome, email, tipo, pessoas, intolerances, observacoes),
+        html: emailTime(nome, email, tipo, pessoas, observacoes, empresa, telefone, campeonato),
       }),
     ]);
 
