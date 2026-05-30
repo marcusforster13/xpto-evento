@@ -283,40 +283,7 @@
     }
     .tipo-btn.active { background: #00d3e4; border-color: #00d3e4; color: #000; }
 
-    /* Intolerances checkboxes */
-    .intol-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 6px;
-    }
-    .intol-check {
-      display: flex;
-      align-items: center;
-      gap: 7px;
-      padding: 7px 10px;
-      background: rgba(255,255,255,.04);
-      border: 1px solid rgba(0,211,228,.15);
-      border-radius: 4px;
-      cursor: pointer;
-      transition: all .15s;
-    }
-    .intol-check:hover { border-color: rgba(0,211,228,.4); }
-    .intol-check.checked { background: rgba(0,211,228,.1); border-color: rgba(0,211,228,.5); }
-    .intol-check input[type="checkbox"] { display: none; }
-    .intol-box {
-      width: 14px;
-      height: 14px;
-      border: 1.5px solid rgba(0,211,228,.4);
-      border-radius: 2px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-      transition: all .15s;
-    }
-    .intol-check.checked .intol-box { background: #00d3e4; border-color: #00d3e4; }
-    .intol-check.checked .intol-box::after { content: '✓'; font-size: 9px; color: #000; font-weight: 900; }
-    .intol-text { font-family: 'Barlow Condensed', sans-serif; font-size: 12px; letter-spacing: 1px; text-transform: uppercase; color: #ccc; }
+
 
     .submit-btn {
       width: 100%;
@@ -366,23 +333,7 @@
       font-size: 12px; letter-spacing: 2px; text-transform: uppercase; cursor: pointer;
     }
 
-    /* Section divider */
-    .section-divider {
-      font-size: 10px;
-      letter-spacing: 2px;
-      text-transform: uppercase;
-      color: #444;
-      margin-bottom: 8px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .section-divider::before, .section-divider::after {
-      content: '';
-      flex: 1;
-      height: 1px;
-      background: rgba(0,211,228,.1);
-    }
+
 
     /* Responsive */
     @media (max-width: 640px) {
@@ -471,7 +422,18 @@
             <input type="email" id="inp-email" placeholder="seu@email.com" autocomplete="email" />
           </div>
 
-          <div style="margin-bottom:12px;">
+          <div class="field-row">
+            <div class="field" style="margin-bottom:0;">
+              <label for="inp-empresa">Empresa</label>
+              <input type="text" id="inp-empresa" placeholder="Nome da empresa" />
+            </div>
+            <div class="field" style="margin-bottom:0;">
+              <label for="inp-telefone">Telefone</label>
+              <input type="tel" id="inp-telefone" placeholder="(11) 99999-9999" />
+            </div>
+          </div>
+
+          <div style="margin-bottom:12px; margin-top:12px;">
             <div class="tipo-label">Você é</div>
             <div class="tipo-row">
               <button class="tipo-btn" data-tipo="cliente"     onclick="selectTipo(this)">Cliente</button>
@@ -490,44 +452,17 @@
             </div>
           </div>
 
-          <!-- Dietary restrictions -->
-          <div class="section-divider">Intolerâncias alimentares</div>
-          <div class="intol-grid" id="intol-grid">
-            <div class="intol-check" onclick="toggleIntol(this)">
-              <input type="checkbox" value="gluten" />
-              <div class="intol-box"></div>
-              <span class="intol-text">🌾 Glúten</span>
-            </div>
-            <div class="intol-check" onclick="toggleIntol(this)">
-              <input type="checkbox" value="lactose" />
-              <div class="intol-box"></div>
-              <span class="intol-text">🥛 Lactose</span>
-            </div>
-            <div class="intol-check" onclick="toggleIntol(this)">
-              <input type="checkbox" value="vegetariano" />
-              <div class="intol-box"></div>
-              <span class="intol-text">🥗 Vegetariano</span>
-            </div>
-            <div class="intol-check" onclick="toggleIntol(this)">
-              <input type="checkbox" value="vegano" />
-              <div class="intol-box"></div>
-              <span class="intol-text">🌱 Vegano</span>
-            </div>
-            <div class="intol-check" onclick="toggleIntol(this)">
-              <input type="checkbox" value="frutos_mar" />
-              <div class="intol-box"></div>
-              <span class="intol-text">🦐 Frutos do Mar</span>
-            </div>
-            <div class="intol-check" onclick="toggleIntol(this)">
-              <input type="checkbox" value="amendoim" />
-              <div class="intol-box"></div>
-              <span class="intol-text">🥜 Amendoim</span>
-            </div>
+          <div class="field" style="margin-top:10px; margin-bottom:0;">
+            <label for="inp-obs">Observações (opcional)</label>
+            <textarea id="inp-obs" placeholder="Alguma informação adicional..."></textarea>
           </div>
 
-          <div class="field" style="margin-top:10px; margin-bottom:0;">
-            <label for="inp-obs">Outra restrição? (opcional)</label>
-            <textarea id="inp-obs" placeholder="Ex: alergia a ovo, sem cebola..."></textarea>
+          <div style="margin-bottom:0; margin-top:12px;">
+            <div class="tipo-label">Vai participar do campeonato de videogame? 🎮</div>
+            <div class="tipo-row">
+              <button class="tipo-btn" data-camp="sim"  onclick="selectCamp(this)">Sim, tô dentro!</button>
+              <button class="tipo-btn" data-camp="nao"  onclick="selectCamp(this)">Só vou assistir</button>
+            </div>
           </div>
 
           <button class="submit-btn" id="submit-btn" disabled onclick="enviar()">
@@ -541,6 +476,7 @@
 
   <script>
     var tipoSel = '';
+    var campSel = '';
     var numPessoas = 1;
 
     function changePeople(delta) {
@@ -548,17 +484,17 @@
       document.getElementById('people-num').textContent = numPessoas;
     }
 
-    function toggleIntol(el) {
-      var cb = el.querySelector('input[type="checkbox"]');
-      cb.checked = !cb.checked;
-      el.classList.toggle('checked', cb.checked);
-    }
-
     function selectTipo(el) {
       tipoSel = el.dataset.tipo;
-      document.querySelectorAll('.tipo-btn').forEach(function(b) { b.classList.remove('active'); });
+      document.querySelectorAll('.tipo-btn[data-tipo]').forEach(function(b) { b.classList.remove('active'); });
       el.classList.add('active');
       checkForm();
+    }
+
+    function selectCamp(el) {
+      campSel = el.dataset.camp;
+      document.querySelectorAll('.tipo-btn[data-camp]').forEach(function(b) { b.classList.remove('active'); });
+      el.classList.add('active');
     }
 
     function checkForm() {
@@ -569,11 +505,6 @@
 
     document.getElementById('inp-nome').addEventListener('input', checkForm);
     document.getElementById('inp-email').addEventListener('input', checkForm);
-
-    function getIntolerances() {
-      var checked = document.querySelectorAll('#intol-grid input[type="checkbox"]:checked');
-      return Array.from(checked).map(function(c) { return c.value; });
-    }
 
     function showLoading() {
       document.getElementById('card-inner').innerHTML =
@@ -606,9 +537,11 @@
     }
 
     async function enviar() {
-      var nome  = document.getElementById('inp-nome').value.trim();
-      var email = document.getElementById('inp-email').value.trim();
-      var obs   = document.getElementById('inp-obs').value.trim();
+      var nome     = document.getElementById('inp-nome').value.trim();
+      var email    = document.getElementById('inp-email').value.trim();
+      var empresa  = document.getElementById('inp-empresa').value.trim();
+      var telefone = document.getElementById('inp-telefone').value.trim();
+      var obs      = document.getElementById('inp-obs').value.trim();
 
       showLoading();
 
@@ -621,7 +554,9 @@
             email: email,
             tipo: tipoSel,
             pessoas: numPessoas,
-            intolerâncias: getIntolerances(),
+            empresa: empresa,
+            telefone: telefone,
+            campeonato: campSel,
             observacoes: obs
           })
         });
