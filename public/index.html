@@ -285,7 +285,51 @@
 
 
 
-    .submit-btn {
+    /* Game selection */
+    .game-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 4px; }
+    .game-card {
+      border: 1px solid rgba(0,211,228,.2);
+      border-radius: 6px;
+      background: rgba(255,255,255,.04);
+      padding: 10px 12px;
+      cursor: pointer;
+      transition: all .15s;
+    }
+    .game-card:hover { border-color: rgba(0,211,228,.45); }
+    .game-card.selected { background: rgba(0,211,228,.1); border-color: rgba(0,211,228,.6); }
+    .game-card-title {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 800;
+      font-size: 13px;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: #fff;
+      margin-bottom: 6px;
+    }
+    .game-card-opts { display: flex; flex-direction: column; gap: 4px; }
+    .game-opt {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      color: #aaa;
+      letter-spacing: .5px;
+      cursor: pointer;
+    }
+    .game-opt input[type="radio"] { display: none; }
+    .game-radio {
+      width: 12px; height: 12px;
+      border: 1.5px solid rgba(0,211,228,.4);
+      border-radius: 50%;
+      flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      transition: all .15s;
+    }
+    .game-opt.checked .game-radio { border-color: #00d3e4; background: #00d3e4; }
+    .game-opt.checked .game-radio::after { content: ''; width: 5px; height: 5px; background: #000; border-radius: 50%; }
+    .game-opt.checked { color: #fff; }
+
+    
       width: 100%;
       margin-top: 14px;
       padding: 14px;
@@ -465,6 +509,43 @@
             </div>
           </div>
 
+          <!-- Game selection (shown only when campeonato = sim) -->
+          <div id="game-section" style="display:none; margin-top:12px;">
+            <div class="tipo-label">Qual jogo você vai jogar?</div>
+            <div class="game-grid">
+
+              <!-- CS -->
+              <div class="game-card" id="card-cs" onclick="selectGame('cs')">
+                <div class="game-card-title">🎯 Counter-Strike</div>
+                <div class="game-card-opts">
+                  <label class="game-opt" id="opt-cs-duo" onclick="event.stopPropagation(); selectGameMode('cs','duo')">
+                    <input type="radio" name="cs-mode" value="duo" />
+                    <div class="game-radio"></div>
+                    Duo (2 jogadores)
+                  </label>
+                  <label class="game-opt" id="opt-cs-squad" onclick="event.stopPropagation(); selectGameMode('cs','squad')">
+                    <input type="radio" name="cs-mode" value="squad" />
+                    <div class="game-radio"></div>
+                    Squad (4 jogadores)
+                  </label>
+                </div>
+              </div>
+
+              <!-- FIFA -->
+              <div class="game-card" id="card-fifa" onclick="selectGame('fifa')">
+                <div class="game-card-title">⚽ FIFA</div>
+                <div class="game-card-opts">
+                  <label class="game-opt" id="opt-fifa-solo" onclick="event.stopPropagation(); selectGameMode('fifa','solo')">
+                    <input type="radio" name="fifa-mode" value="solo" />
+                    <div class="game-radio"></div>
+                    Individual (1 jogador)
+                  </label>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
           <button class="submit-btn" id="submit-btn" disabled onclick="enviar()">
             Confirmar presença
           </button>
@@ -477,6 +558,8 @@
   <script>
     var tipoSel = '';
     var campSel = '';
+    var gameSel = '';      // 'cs' ou 'fifa'
+    var gameMode = '';     // 'duo', 'squad', 'solo'
     var numPessoas = 1;
 
     function changePeople(delta) {
@@ -495,6 +578,29 @@
       campSel = el.dataset.camp;
       document.querySelectorAll('.tipo-btn[data-camp]').forEach(function(b) { b.classList.remove('active'); });
       el.classList.add('active');
+      document.getElementById('game-section').style.display = campSel === 'sim' ? 'block' : 'none';
+      if (campSel === 'nao') { gameSel = ''; gameMode = ''; resetGameCards(); }
+    }
+
+    function selectGame(jogo) {
+      gameSel = jogo;
+      gameMode = '';
+      document.querySelectorAll('.game-card').forEach(function(c) { c.classList.remove('selected'); });
+      document.getElementById('card-' + jogo).classList.add('selected');
+      document.querySelectorAll('.game-opt').forEach(function(o) { o.classList.remove('checked'); });
+    }
+
+    function selectGameMode(jogo, modo) {
+      selectGame(jogo);
+      gameMode = modo;
+      var optId = 'opt-' + jogo + '-' + modo;
+      document.querySelectorAll('#card-' + jogo + ' .game-opt').forEach(function(o) { o.classList.remove('checked'); });
+      document.getElementById(optId).classList.add('checked');
+    }
+
+    function resetGameCards() {
+      document.querySelectorAll('.game-card').forEach(function(c) { c.classList.remove('selected'); });
+      document.querySelectorAll('.game-opt').forEach(function(o) { o.classList.remove('checked'); });
     }
 
     function checkForm() {
@@ -557,6 +663,8 @@
             empresa: empresa,
             telefone: telefone,
             campeonato: campSel,
+            jogo: gameSel,
+            jogo_modo: gameMode,
             observacoes: obs
           })
         });
