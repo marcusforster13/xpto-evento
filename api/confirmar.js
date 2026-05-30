@@ -96,7 +96,7 @@ function emailConvidado(nome, pessoas, obs) {
 }
 
 // ── Email para o time (Mariana) ─────────────────────────────────────────────
-function emailTime(nome, email, tipo, pessoas, obs, empresa, telefone, campeonato) {
+function emailTime(nome, email, tipo, pessoas, obs, empresa, telefone, campeonato, jogo, jogo_modo) {
   const now = new Date().toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' });
 
   return `<!DOCTYPE html>
@@ -130,6 +130,20 @@ function emailTime(nome, email, tipo, pessoas, obs, empresa, telefone, campeonat
                 <td style="padding:10px 16px;color:#888;font-weight:600;text-transform:uppercase;font-size:11px;letter-spacing:1px;border-top:1px solid #eee;">Campeonato 🎮</td>
                 <td style="padding:10px 16px;color:#111;border-top:1px solid #eee;">${campeonato === 'sim' ? '✅ Vai participar' : campeonato === 'nao' ? '👀 Só vai assistir' : '—'}</td>
               </tr>
+              ${campeonato === 'sim' ? `<tr>
+                <td style="padding:10px 16px;color:#888;font-weight:600;text-transform:uppercase;font-size:11px;letter-spacing:1px;border-top:1px solid #eee;">Jogo</td>
+                <td style="padding:10px 16px;color:#111;border-top:1px solid #eee;">${
+                  jogo === 'cs' ? '🎯 Counter-Strike' : jogo === 'fifa' ? '⚽ FIFA' : '—'
+                }</td>
+              </tr>
+              <tr style="background:#fafafa;">
+                <td style="padding:10px 16px;color:#888;font-weight:600;text-transform:uppercase;font-size:11px;letter-spacing:1px;border-top:1px solid #eee;">Modalidade</td>
+                <td style="padding:10px 16px;color:#111;border-top:1px solid #eee;">${
+                  jogo_modo === 'duo' ? 'Duo (2 jogadores)' :
+                  jogo_modo === 'squad' ? 'Squad (4 jogadores)' :
+                  jogo_modo === 'solo' ? 'Individual' : '—'
+                }</td>
+              </tr>` : ''}
               <tr>
                 <td style="padding:10px 16px;color:#888;font-weight:600;text-transform:uppercase;font-size:11px;letter-spacing:1px;border-top:1px solid #eee;">Empresa</td>
                 <td style="padding:10px 16px;color:#111;border-top:1px solid #eee;">${empresa || '—'}</td>
@@ -176,7 +190,7 @@ export default async function handler(req) {
     return new Response(JSON.stringify({ error: 'JSON inválido' }), { status: 400 });
   }
 
-  const { nome, email, tipo, pessoas = 1, observacoes = '', empresa = '', telefone = '', campeonato = '' } = body;
+  const { nome, email, tipo, pessoas = 1, observacoes = '', empresa = '', telefone = '', campeonato = '', jogo = '', jogo_modo = '' } = body;
 
   if (!nome || !email || !tipo) {
     return new Response(JSON.stringify({ error: 'Campos obrigatórios faltando.' }), { status: 400 });
@@ -194,7 +208,7 @@ export default async function handler(req) {
       sendEmail({
         to: EMAIL_TEAM,
         subject: `[Evento 13.06] Nova confirmação: ${nome}`,
-        html: emailTime(nome, email, tipo, pessoas, observacoes, empresa, telefone, campeonato),
+        html: emailTime(nome, email, tipo, pessoas, observacoes, empresa, telefone, campeonato, jogo, jogo_modo),
       }),
     ]);
 
