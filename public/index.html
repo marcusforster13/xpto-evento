@@ -9,7 +9,7 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     html, body {
-      height: 100%; overflow: hidden;
+      min-height: 100%;
       background: linear-gradient(160deg, #2a2a2a 0%, #1e1e1e 60%, #000020 100%);
       font-family: 'Barlow', sans-serif;
       color: #fff;
@@ -20,7 +20,8 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      padding: 12px 16px;
+      padding: 24px 16px;
+      overflow-y: auto;
     }
 
     /* Corner brackets */
@@ -183,6 +184,8 @@
       border: 1px solid rgba(0,211,228,.2);
       border-radius: 8px;
       padding: 20px 24px;
+      max-height: calc(100vh - 48px);
+      overflow-y: auto;
     }
     .card-title {
       font-family: 'Barlow Condensed', sans-serif;
@@ -282,6 +285,8 @@
       transition: all .15s;
     }
     .tipo-btn.active { background: #00d3e4; border-color: #00d3e4; color: #000; }
+    .tipo-btn:focus { outline: none; }
+    .tipo-btn:focus:not(.active) { border-color: rgba(0,211,228,.5); background: rgba(255,255,255,.06); color: #fff; }
 
 
 
@@ -345,7 +350,7 @@
       cursor: pointer;
       transition: opacity .15s;
     }
-    .submit-btn:disabled { opacity: .3; cursor: not-allowed; }
+    .submit-btn:disabled { opacity: .45; cursor: not-allowed; background: rgba(0,211,228,.4); border: 1px solid rgba(0,211,228,.3); }
     .submit-btn:not(:disabled):hover { opacity: .85; }
 
     /* States */
