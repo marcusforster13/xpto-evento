@@ -1,683 +1,223 @@
-<!DOCTYPE html>
+export const config = { runtime: 'edge' };
+
+const RESEND_API_KEY = process.env.RESEND_API_KEY;
+const EMAIL_TEAM     = 'mariana.silva@xptoinc.com.br';
+const EMAIL_FROM     = 'XPTO inc. <eventos@xptoinc.com.br>'; // troque pelo domínio verificado no Resend
+
+async function sendEmail({ to, subject, html }) {
+  const res = await fetch('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${RESEND_API_KEY}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ from: EMAIL_FROM, to, subject, html }),
+  });
+  if (!res.ok) {
+    const err = await res.text();
+    throw new Error(`Resend error: ${err}`);
+  }
+  return res.json();
+}
+
+// ── Email para o convidado ──────────────────────────────────────────────────
+function emailConvidado(nome, pessoas, obs) {
+  const obsHtml = obs
+    ? `<p style="margin:0 0 6px;color:#999;font-size:13px;text-transform:uppercase;letter-spacing:1px;">Observação</p>
+       <p style="margin:0 0 20px;color:#fff;font-size:15px;">${obs}</p>`
+    : '';
+
+  return `<!DOCTYPE html>
 <html lang="pt-BR">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>XPTO inc. | Confirme sua Presença</title>
-  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;800;900&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet" />
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-    html, body {
-      height: 100%; overflow: hidden;
-      background: linear-gradient(160deg, #2a2a2a 0%, #1e1e1e 60%, #000020 100%);
-      font-family: 'Barlow', sans-serif;
-      color: #fff;
-    }
-
-    body {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 12px 16px;
-    }
-
-    /* Corner brackets */
-    .corner { position: fixed; width: 48px; height: 48px; opacity: .45; pointer-events: none; }
-    .corner.tl { top: 0; left: 0; border-top: 2px solid #00d3e4; border-left: 2px solid #00d3e4; }
-    .corner.tr { top: 0; right: 0; border-top: 2px solid #00d3e4; border-right: 2px solid #00d3e4; }
-    .corner.bl { bottom: 0; left: 0; border-bottom: 2px solid #00d3e4; border-left: 2px solid #00d3e4; }
-    .corner.br { bottom: 0; right: 0; border-bottom: 2px solid #00d3e4; border-right: 2px solid #00d3e4; }
-
-    /* Main layout */
-    .page {
-      width: 100%;
-      max-width: 900px;
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      grid-template-rows: auto auto auto;
-      gap: 10px 24px;
-      align-items: start;
-    }
-
-    /* ── LEFT COLUMN ── */
-    .col-left {
-      grid-column: 1;
-      grid-row: 1 / 4;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-
-    header {
-      display: flex;
-      flex-direction: column;
-      align-items: flex-start;
-      gap: 8px;
-    }
-
-    .convida {
-      color: #00d3e4;
-      font-size: 9px;
-      font-family: 'Barlow Condensed', sans-serif;
-      letter-spacing: 4px;
-      text-transform: uppercase;
-      opacity: .8;
-    }
-
-    /* SVG logo */
-    .logo-svg { width: 260px; height: auto; }
-
-    .hero { }
-    .hero h1 {
-      font-family: 'Barlow Condensed', sans-serif;
-      font-weight: 900;
-      font-size: clamp(42px, 8vw, 72px);
-      line-height: .88;
-      text-transform: uppercase;
-      color: #fff;
-      letter-spacing: -1px;
-    }
-    .hero h2 {
-      font-family: 'Barlow Condensed', sans-serif;
-      font-weight: 900;
-      font-size: clamp(40px, 7.5vw, 68px);
-      line-height: .88;
-      text-transform: uppercase;
-      color: #00d3e4;
-      letter-spacing: -1px;
-    }
-    .plus-row {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      margin: 6px 0;
-    }
-    .plus-line { height: 2px; width: 48px; background: #00d3e4; }
-    .plus-sym {
-      color: #00d3e4;
-      font-size: clamp(24px, 4vw, 38px);
-      font-family: 'Barlow Condensed', sans-serif;
-      font-weight: 700;
-    }
-
-    /* Info strip */
-    .info-strip {
-      background: rgba(0,211,228,.07);
-      border: 1px solid rgba(0,211,228,.22);
-      border-radius: 4px;
-      padding: 12px 16px;
-      display: flex;
-      gap: 16px;
-      align-items: center;
-      flex-wrap: wrap;
-    }
-    .info-cell { text-align: center; }
-    .info-date {
-      color: #00d3e4;
-      font-size: 36px;
-      font-family: 'Barlow Condensed', sans-serif;
-      font-weight: 900;
-      line-height: 1;
-    }
-    .info-sub { color: #999; font-size: 10px; letter-spacing: 2px; text-transform: uppercase; }
-    .info-div { width: 1px; height: 36px; background: rgba(0,211,228,.25); }
-    .info-label {
-      color: #fff;
-      font-size: 11px;
-      font-family: 'Barlow Condensed', sans-serif;
-      font-weight: 600;
-      letter-spacing: 1px;
-      text-transform: uppercase;
-    }
-    .info-cyan {
-      color: #00d3e4;
-      font-size: 11px;
-      font-family: 'Barlow Condensed', sans-serif;
-      font-weight: 600;
-      letter-spacing: 1px;
-      text-transform: uppercase;
-    }
-
-    .local {
-      color: #555;
-      font-size: 10px;
-      letter-spacing: 2px;
-      text-transform: uppercase;
-    }
-
-    /* Tags */
-    .tags-row {
-      display: flex;
-      gap: 14px;
-      flex-wrap: wrap;
-    }
-    .tag-item { text-align: center; max-width: 100px; }
-    .tag-badge {
-      display: inline-block;
-      padding: 3px 10px;
-      background: rgba(0,211,228,.1);
-      border: 1px solid #00d3e4;
-      border-radius: 2px;
-      font-family: 'Barlow Condensed', sans-serif;
-      font-weight: 700;
-      font-size: 10px;
-      letter-spacing: 1.5px;
-      color: #00d3e4;
-      margin-bottom: 4px;
-    }
-    .tag-desc { color: #555; font-size: 9px; line-height: 1.4; text-transform: uppercase; letter-spacing: .5px; }
-
-    .footer-line { color: #3a3a3a; font-size: 9px; letter-spacing: 2px; text-transform: uppercase; margin-top: 4px; }
-
-    /* ── RIGHT COLUMN ── */
-    .col-right {
-      grid-column: 2;
-      grid-row: 1 / 4;
-    }
-
-    .card {
-      width: 100%;
-      background: rgba(255,255,255,.04);
-      border: 1px solid rgba(0,211,228,.2);
-      border-radius: 8px;
-      padding: 20px 24px;
-    }
-    .card-title {
-      font-family: 'Barlow Condensed', sans-serif;
-      font-weight: 800;
-      font-size: 17px;
-      letter-spacing: 3px;
-      text-transform: uppercase;
-      color: #00d3e4;
-      margin-bottom: 16px;
-      text-align: center;
-    }
-
-    .field { display: flex; flex-direction: column; gap: 5px; margin-bottom: 12px; }
-    .field label { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: #999; }
-    .field input, .field textarea, .field select {
-      padding: 10px 12px;
-      background: rgba(255,255,255,.07);
-      border: 1px solid rgba(0,211,228,.25);
-      border-radius: 4px;
-      color: #fff;
-      font-size: 14px;
-      font-family: 'Barlow', sans-serif;
-      outline: none;
-      width: 100%;
-      transition: border-color .15s;
-    }
-    .field input:focus, .field textarea:focus, .field select:focus { border-color: #00d3e4; }
-    .field textarea { resize: none; height: 60px; }
-    .field select {
-      appearance: none;
-      -webkit-appearance: none;
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%2300d3e4' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");
-      background-repeat: no-repeat;
-      background-position: right 12px center;
-      cursor: pointer;
-    }
-    .field select option { background: #1e1e1e; color: #fff; }
-
-    /* Two-column fields */
-    .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
-
-    /* People counter */
-    .people-counter {
-      display: flex;
-      align-items: center;
-      gap: 0;
-      background: rgba(255,255,255,.07);
-      border: 1px solid rgba(0,211,228,.25);
-      border-radius: 4px;
-      overflow: hidden;
-      transition: border-color .15s;
-    }
-    .people-counter:focus-within { border-color: #00d3e4; }
-    .people-btn {
-      width: 36px;
-      height: 38px;
-      background: rgba(0,211,228,.1);
-      border: none;
-      color: #00d3e4;
-      font-size: 20px;
-      font-family: 'Barlow Condensed', sans-serif;
-      font-weight: 700;
-      cursor: pointer;
-      transition: background .15s;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-    }
-    .people-btn:hover { background: rgba(0,211,228,.2); }
-    .people-num {
-      flex: 1;
-      text-align: center;
-      font-family: 'Barlow Condensed', sans-serif;
-      font-weight: 900;
-      font-size: 20px;
-      color: #fff;
-      line-height: 38px;
-    }
-
-    /* Tipo buttons */
-    .tipo-label { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: #999; margin-bottom: 8px; }
-    .tipo-row { display: flex; gap: 6px; }
-    .tipo-btn {
-      flex: 1;
-      padding: 9px 4px;
-      background: rgba(255,255,255,.06);
-      border: 1px solid rgba(0,211,228,.2);
-      border-radius: 4px;
-      color: #fff;
-      font-family: 'Barlow Condensed', sans-serif;
-      font-weight: 700;
-      font-size: 11px;
-      letter-spacing: 1.5px;
-      text-transform: uppercase;
-      cursor: pointer;
-      transition: all .15s;
-    }
-    .tipo-btn.active { background: #00d3e4; border-color: #00d3e4; color: #000; }
-
-
-
-    /* Game selection */
-    .game-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 4px; }
-    .game-card {
-      border: 1px solid rgba(0,211,228,.2);
-      border-radius: 6px;
-      background: rgba(255,255,255,.04);
-      padding: 10px 12px;
-      cursor: pointer;
-      transition: all .15s;
-    }
-    .game-card:hover { border-color: rgba(0,211,228,.45); }
-    .game-card.selected { background: rgba(0,211,228,.1); border-color: rgba(0,211,228,.6); }
-    .game-card-title {
-      font-family: 'Barlow Condensed', sans-serif;
-      font-weight: 800;
-      font-size: 13px;
-      letter-spacing: 1.5px;
-      text-transform: uppercase;
-      color: #fff;
-      margin-bottom: 6px;
-    }
-    .game-card-opts { display: flex; flex-direction: column; gap: 4px; }
-    .game-opt {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 11px;
-      color: #aaa;
-      letter-spacing: .5px;
-      cursor: pointer;
-    }
-    .game-opt input[type="radio"] { display: none; }
-    .game-radio {
-      width: 12px; height: 12px;
-      border: 1.5px solid rgba(0,211,228,.4);
-      border-radius: 50%;
-      flex-shrink: 0;
-      display: flex; align-items: center; justify-content: center;
-      transition: all .15s;
-    }
-    .game-opt.checked .game-radio { border-color: #00d3e4; background: #00d3e4; }
-    .game-opt.checked .game-radio::after { content: ''; width: 5px; height: 5px; background: #000; border-radius: 50%; }
-    .game-opt.checked { color: #fff; }
-
-    
-      width: 100%;
-      margin-top: 14px;
-      padding: 14px;
-      background: #00d3e4;
-      border: none;
-      border-radius: 4px;
-      color: #000;
-      font-family: 'Barlow Condensed', sans-serif;
-      font-weight: 900;
-      font-size: 15px;
-      letter-spacing: 3px;
-      text-transform: uppercase;
-      cursor: pointer;
-      transition: opacity .15s;
-    }
-    .submit-btn:disabled { opacity: .3; cursor: not-allowed; }
-    .submit-btn:not(:disabled):hover { opacity: .85; }
-
-    /* States */
-    .state-loading { text-align: center; padding: 32px 0; }
-    .spinner {
-      width: 40px; height: 40px;
-      border: 3px solid rgba(0,211,228,.18);
-      border-top-color: #00d3e4;
-      border-radius: 50%; margin: 0 auto 16px;
-      animation: spin .8s linear infinite;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
-    .loading-txt { color: #00d3e4; font-family: 'Barlow Condensed', sans-serif; font-size: 14px; letter-spacing: 2px; text-transform: uppercase; }
-
-    .state-success { text-align: center; padding: 24px 0; }
-    .success-icon { font-size: 48px; margin-bottom: 12px; }
-    .success-title { font-family: 'Barlow Condensed', sans-serif; font-weight: 900; font-size: 24px; color: #00d3e4; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 10px; }
-    .success-msg { color: #ccc; font-size: 13px; line-height: 1.7; }
-    .success-note { color: #555; font-size: 11px; margin-top: 16px; letter-spacing: 1px; text-transform: uppercase; }
-
-    .state-error { text-align: center; padding: 24px 0; }
-    .error-icon { font-size: 40px; margin-bottom: 10px; }
-    .error-title { font-family: 'Barlow Condensed', sans-serif; font-weight: 900; font-size: 20px; color: #ff5555; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 8px; }
-    .error-msg { color: #aaa; font-size: 13px; margin-bottom: 18px; }
-    .retry-btn {
-      padding: 10px 22px; background: transparent;
-      border: 1px solid #00d3e4; border-radius: 4px; color: #00d3e4;
-      font-family: 'Barlow Condensed', sans-serif; font-weight: 700;
-      font-size: 12px; letter-spacing: 2px; text-transform: uppercase; cursor: pointer;
-    }
-
-
-
-    /* Responsive */
-    @media (max-width: 640px) {
-      html, body { overflow: auto; height: auto; }
-      .page { grid-template-columns: 1fr; }
-      .col-left, .col-right { grid-column: 1; grid-row: auto; }
-      header { align-items: center; }
-      .logo-svg { width: 80vw; max-width: 320px; }
-      .convida { text-align: center; }
-    }
-  </style>
-</head>
-<body>
-
-  <div class="corner tl"></div>
-  <div class="corner tr"></div>
-  <div class="corner bl"></div>
-  <div class="corner br"></div>
-
-  <div class="page">
-
-    <!-- LEFT COLUMN -->
-    <div class="col-left">
-
-      <header>
-        <svg class="logo-svg" viewBox="0 0 900 420" xmlns="http://www.w3.org/2000/svg" fill="none">
-          <style>.l3{fill:#00d3e4}</style>
-          <g><path class="l3" d="M799.92,327.94c-.17,1.34-.41,2.55-.5,3.77-.33,4.67-1.57,9.14-3.22,13.48-1.71,4.53-3.91,8.84-6.78,12.74-1.57,2.14-3.22,4.24-4.99,6.22-3.27,3.64-6.94,6.84-11.03,9.54-6.05,4-12.63,6.79-19.66,8.44-2.7.63-5.53.81-8.31,1.04-2.54.21-5.09.27-7.63.27-28.04.02-56.08-.02-84.12.04-7.21,0-14.22-1-21-3.47-5.62-2.05-10.85-4.84-15.5-8.61-2.84-2.31-5.7-4.69-8.13-7.42-2.57-2.89-4.81-6.11-6.89-9.38-3.46-5.41-5.73-11.36-7.1-17.63-.43-1.99-.71-4.04-.84-6.07-.2-3.18-.41-6.97-.23-10.13.19-3.46.61-6.92,1.31-10.31,1.04-4.98,2.87-9.7,5.28-14.19,1.92-3.56,4.05-6.99,6.77-10.01,1.99-2.21,3.96-4.46,6.2-6.4,2.59-2.25,5.36-4.37,8.26-6.19,4.25-2.68,8.79-4.87,13.66-6.17,3.26-.87,6.59-1.65,9.94-2.02,3.99-.44,8.04-.55,12.05-.55,28.47-.05,56.93-.06,85.4.02,4.8,0,9.57.72,14.13,2.29,3.57,1.22,7.14,2.55,10.57,4.13,3.95,1.82,7.57,4.24,10.86,7.09,1.87,1.63,3.8,3.22,5.5,5.02,2.91,3.08,5.44,6.45,7.64,10.11,2.21,3.69,4.04,8.14,5.37,12.2,1,3.04,1.57,6.24,2.17,9.39.35,1.84.41,3.75.7,5.68.1,2.36.1,4.67.1,7.11M718.74,357.56c7.76-.09,15.52-.13,23.27-.29,2.11-.04,4.27-.29,6.33-.77,5.84-1.37,10.91-4.2,15.26-8.37,3.62-3.47,6.16-7.61,8.01-12.19,1.49-3.71,2.01-8.23,2.1-12.19.04-2.06-.37-4.15-.73-6.19-1.07-6.07-3.9-11.3-7.97-15.88-2.3-2.57-4.99-4.72-7.98-6.41-4.44-2.48-9.16-4.19-14.32-4.2-30.47-.03-60.96-.02-91.43,0-1.49,0-3,.25-4.47.49-7.94,1.34-14.4,5.35-19.47,11.47-4.46,5.38-6.91,11.71-7.42,18.7-.31,4.26.22,9.06,1.59,13.1,1.61,4.75,4.21,8.98,7.68,12.63,2.43,2.55,5.29,4.56,8.38,6.24,5.09,2.75,10.61,3.82,16.32,3.84,21.55.05,43.09.02,64.89.02h-.04Z"/><path class="l3" d="M125.11,337.71h33.1l45.81,45.82h36.02c-18.44-18.42-58.76-58.73-58.76-58.73l60.08-59.82h-36.51c-.05,0-46.64,46.57-46.64,46.57h-33.1s-46.58-46.57-46.64-46.57h-36.51l60.08,59.82s-40.32,40.31-58.76,58.73h36.02l45.81-45.82Z"/><path class="l3" d="M415.5,348.93c-1.84,1.95-3.52,3.97-5.48,5.65-2.97,2.55-6.33,4.54-9.92,6.14-3.22,1.43-6.53,2.61-10.06,2.97-2.81.29-5.63.51-8.45.51-34.5.04-68.99.02-103.49.02h-1.64v19.16h-26.15v-45.32h1.49c43.9,0,87.8.02,131.71-.03,5.19,0,9.24-2.45,12.47-6.52,2.44-3.08,3.26-6.56,3.28-10.34.03-4.18-.03-8.38.02-12.56.05-5.33-1.93-9.77-5.91-13.23-2.77-2.41-6.03-3.74-9.77-3.74h-133.28v-26.16h1.36c28.3,0,56.6.03,84.9,0,15.88-.03,31.77-.24,47.65-.2,5.21.02,10.29,1.2,15.11,3.28,4.27,1.85,8.12,4.31,11.64,7.39,3.55,3.11,6.28,6.79,8.68,10.78,2.47,4.1,4.01,8.56,4.93,13.23.32,1.64.55,3.32.57,4.99.06,6.33.05,12.65.02,18.98-.04,5.09-1.31,9.9-3.28,14.58-1.43,3.38-3.38,6.43-5.46,9.41-.24.34-.58.62-.93,1.01h-.01Z"/><path class="l3" d="M506.49,264.97h77.89v26.12h-61.94v92.3h-28.48v-92.21h-62.05v-26.21h74.58Z"/></g>
-        </svg>
-        <p class="convida">Convida para</p>
-      </header>
-
-
-
-      <div class="info-strip">
-        <div class="info-cell">
-          <div class="info-date">13.06</div>
-          <div class="info-sub">Às 10:00 AM</div>
-        </div>
-        <div class="info-div"></div>
-        <div class="info-cell">
-          <div class="info-label">Estréia do 1º jogo</div>
-          <div class="info-cyan">do Brasil na Copa</div>
-        </div>
-        <div class="info-div"></div>
-        <div class="info-cell">
-          <div class="info-label">🍖 Churrasco de</div>
-          <div class="info-label">Confraternização</div>
-        </div>
-      </div>
-
-      <p class="local">Local sem cautela de armamento</p>
-
-      <div class="tags-row">
-        <div class="tag-item">
-          <div class="tag-badge">Clientes</div>
-          <p class="tag-desc">Parceiros que fazem acontecer</p>
-        </div>
-        <div class="tag-item">
-          <div class="tag-badge">Funcionários</div>
-          <p class="tag-desc">Um time unido dentro e fora do jogo</p>
-        </div>
-        <div class="tag-item">
-          <div class="tag-badge">Fornecedores</div>
-          <p class="tag-desc">Parcerias que impulsionam o futuro</p>
-        </div>
-      </div>
-
-      <p class="footer-line">Vamos jogar e assistir o jogo juntos</p>
-
-    </div>
-
-    <!-- RIGHT COLUMN -->
-    <div class="col-right">
-      <div class="card">
-        <div id="card-inner">
-          <div class="card-title">Confirme sua presença 👊</div>
-
-          <div class="field">
-            <label for="inp-nome">Nome completo</label>
-            <input type="text" id="inp-nome" placeholder="Seu nome" autocomplete="name" />
-          </div>
-
-          <div class="field">
-            <label for="inp-email">E-mail</label>
-            <input type="email" id="inp-email" placeholder="seu@email.com" autocomplete="email" />
-          </div>
-
-          <div class="field-row">
-            <div class="field" style="margin-bottom:0;">
-              <label for="inp-empresa">Empresa</label>
-              <input type="text" id="inp-empresa" placeholder="Nome da empresa" />
-            </div>
-            <div class="field" style="margin-bottom:0;">
-              <label for="inp-telefone">Telefone</label>
-              <input type="tel" id="inp-telefone" placeholder="(11) 99999-9999" />
-            </div>
-          </div>
-
-          <div style="margin-bottom:12px; margin-top:12px;">
-            <div class="tipo-label">Você é</div>
-            <div class="tipo-row">
-              <button class="tipo-btn" data-tipo="cliente"     onclick="selectTipo(this)">Cliente</button>
-              <button class="tipo-btn" data-tipo="funcionario" onclick="selectTipo(this)">Funcionário</button>
-              <button class="tipo-btn" data-tipo="fornecedor"  onclick="selectTipo(this)">Fornecedor</button>
-            </div>
-          </div>
-
-          <!-- People count -->
-          <div class="field">
-            <label>Quantas pessoas vão com você?</label>
-            <div class="people-counter">
-              <button class="people-btn" onclick="changePeople(-1)">−</button>
-              <div class="people-num" id="people-num">1</div>
-              <button class="people-btn" onclick="changePeople(1)">+</button>
-            </div>
-          </div>
-
-          <div class="field" style="margin-top:10px; margin-bottom:0;">
-            <label for="inp-obs">Observações (opcional)</label>
-            <textarea id="inp-obs" placeholder="Alguma informação adicional..."></textarea>
-          </div>
-
-          <div style="margin-bottom:0; margin-top:12px;">
-            <div class="tipo-label">Vai participar do campeonato de videogame? 🎮</div>
-            <div class="tipo-row">
-              <button class="tipo-btn" data-camp="sim"  onclick="selectCamp(this)">Sim, tô dentro!</button>
-              <button class="tipo-btn" data-camp="nao"  onclick="selectCamp(this)">Só vou assistir</button>
-            </div>
-          </div>
-
-          <!-- Game selection (shown only when campeonato = sim) -->
-          <div id="game-section" style="display:none; margin-top:12px;">
-            <div class="tipo-label">Qual jogo você vai jogar?</div>
-            <div class="game-grid">
-
-              <!-- CS -->
-              <div class="game-card" id="card-cs" onclick="selectGame('cs')">
-                <div class="game-card-title">🎯 Counter-Strike</div>
-                <div class="game-card-opts">
-                  <label class="game-opt" id="opt-cs-duo" onclick="event.stopPropagation(); selectGameMode('cs','duo')">
-                    <input type="radio" name="cs-mode" value="duo" />
-                    <div class="game-radio"></div>
-                    Duo (2 jogadores)
-                  </label>
-                  <label class="game-opt" id="opt-cs-squad" onclick="event.stopPropagation(); selectGameMode('cs','squad')">
-                    <input type="radio" name="cs-mode" value="squad" />
-                    <div class="game-radio"></div>
-                    Squad (4 jogadores)
-                  </label>
-                </div>
-              </div>
-
-              <!-- FIFA -->
-              <div class="game-card" id="card-fifa" onclick="selectGame('fifa')">
-                <div class="game-card-title">⚽ FIFA</div>
-                <div class="game-card-opts">
-                  <label class="game-opt" id="opt-fifa-solo" onclick="event.stopPropagation(); selectGameMode('fifa','solo')">
-                    <input type="radio" name="fifa-mode" value="solo" />
-                    <div class="game-radio"></div>
-                    Individual (1 jogador)
-                  </label>
-                </div>
-              </div>
-
-            </div>
-          </div>
-
-          <button class="submit-btn" id="submit-btn" disabled onclick="enviar()">
-            Confirmar presença
-          </button>
-        </div>
-      </div>
-    </div>
-
-  </div><!-- .page -->
-
-  <script>
-    var tipoSel = '';
-    var campSel = '';
-    var gameSel = '';      // 'cs' ou 'fifa'
-    var gameMode = '';     // 'duo', 'squad', 'solo'
-    var numPessoas = 1;
-
-    function changePeople(delta) {
-      numPessoas = Math.max(1, Math.min(20, numPessoas + delta));
-      document.getElementById('people-num').textContent = numPessoas;
-    }
-
-    function selectTipo(el) {
-      tipoSel = el.dataset.tipo;
-      document.querySelectorAll('.tipo-btn[data-tipo]').forEach(function(b) { b.classList.remove('active'); });
-      el.classList.add('active');
-      checkForm();
-    }
-
-    function selectCamp(el) {
-      campSel = el.dataset.camp;
-      document.querySelectorAll('.tipo-btn[data-camp]').forEach(function(b) { b.classList.remove('active'); });
-      el.classList.add('active');
-      document.getElementById('game-section').style.display = campSel === 'sim' ? 'block' : 'none';
-      if (campSel === 'nao') { gameSel = ''; gameMode = ''; resetGameCards(); }
-    }
-
-    function selectGame(jogo) {
-      gameSel = jogo;
-      gameMode = '';
-      document.querySelectorAll('.game-card').forEach(function(c) { c.classList.remove('selected'); });
-      document.getElementById('card-' + jogo).classList.add('selected');
-      document.querySelectorAll('.game-opt').forEach(function(o) { o.classList.remove('checked'); });
-    }
-
-    function selectGameMode(jogo, modo) {
-      selectGame(jogo);
-      gameMode = modo;
-      var optId = 'opt-' + jogo + '-' + modo;
-      document.querySelectorAll('#card-' + jogo + ' .game-opt').forEach(function(o) { o.classList.remove('checked'); });
-      document.getElementById(optId).classList.add('checked');
-    }
-
-    function resetGameCards() {
-      document.querySelectorAll('.game-card').forEach(function(c) { c.classList.remove('selected'); });
-      document.querySelectorAll('.game-opt').forEach(function(o) { o.classList.remove('checked'); });
-    }
-
-    function checkForm() {
-      var n = document.getElementById('inp-nome').value.trim();
-      var e = document.getElementById('inp-email').value.trim();
-      document.getElementById('submit-btn').disabled = !(n && e && tipoSel);
-    }
-
-    document.getElementById('inp-nome').addEventListener('input', checkForm);
-    document.getElementById('inp-email').addEventListener('input', checkForm);
-
-    function showLoading() {
-      document.getElementById('card-inner').innerHTML =
-        '<div class="state-loading">' +
-          '<div class="spinner"></div>' +
-          '<p class="loading-txt">Confirmando presença...</p>' +
-        '</div>';
-    }
-
-    function showSuccess(nome, email) {
-      document.getElementById('card-inner').innerHTML =
-        '<div class="state-success">' +
-          '<div class="success-icon">🎮⚽</div>' +
-          '<div class="success-title">Presença confirmada!</div>' +
-          '<p class="success-msg">Boa, <strong style="color:#fff">' + nome + '</strong>!<br>' +
-          'Enviamos um e-mail de confirmação para<br>' +
-          '<strong style="color:#00d3e4">' + email + '</strong>.</p>' +
-          '<p class="success-note">13.06 — 10:00 AM — Vamos juntos! 🔥</p>' +
-        '</div>';
-    }
-
-    function showError(msg) {
-      document.getElementById('card-inner').innerHTML =
-        '<div class="state-error">' +
-          '<div class="error-icon">⚠️</div>' +
-          '<div class="error-title">Ops, algo deu errado</div>' +
-          '<p class="error-msg">' + msg + '</p>' +
-          '<button class="retry-btn" onclick="location.reload()">Tentar novamente</button>' +
-        '</div>';
-    }
-
-    async function enviar() {
-      var nome     = document.getElementById('inp-nome').value.trim();
-      var email    = document.getElementById('inp-email').value.trim();
-      var empresa  = document.getElementById('inp-empresa').value.trim();
-      var telefone = document.getElementById('inp-telefone').value.trim();
-      var obs      = document.getElementById('inp-obs').value.trim();
-
-      showLoading();
-
-      try {
-        var res = await fetch('/api/confirmar', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            nome: nome,
-            email: email,
-            tipo: tipoSel,
-            pessoas: numPessoas,
-            empresa: empresa,
-            telefone: telefone,
-            campeonato: campSel,
-            jogo: gameSel,
-            jogo_modo: gameMode,
-            observacoes: obs
-          })
-        });
-        var data = await res.json();
-        if (res.ok && data.success) {
-          showSuccess(nome, email);
-        } else {
-          showError(data.error || 'Erro ao confirmar. Tente novamente.');
-        }
-      } catch (e) {
-        showError('Erro de conexão. Verifique sua internet e tente novamente.');
-      }
-    }
-  </script>
+<head><meta charset="UTF-8"/></head>
+<body style="margin:0;padding:0;background:#111;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#111;padding:40px 16px;">
+    <tr><td align="center">
+      <table width="520" cellpadding="0" cellspacing="0" style="background:#1a1a1a;border:1px solid rgba(0,211,228,.25);border-radius:8px;overflow:hidden;">
+
+        <!-- Header -->
+        <tr>
+          <td style="background:linear-gradient(135deg,#0a0a0a,#001a20);padding:32px 40px;text-align:center;border-bottom:2px solid #00d3e4;">
+            <p style="margin:0 0 4px;color:#00d3e4;font-size:10px;letter-spacing:4px;text-transform:uppercase;">XPTO inc. convida para</p>
+            <p style="margin:0;color:#fff;font-size:42px;font-weight:900;letter-spacing:-1px;line-height:1;">VIDEO-GAME<br/><span style="color:#00d3e4;">+ TELÃO DA COPA</span></p>
+          </td>
+        </tr>
+
+        <!-- Body -->
+        <tr>
+          <td style="padding:32px 40px;">
+            <p style="margin:0 0 24px;color:#fff;font-size:18px;">E aí, <strong>${nome}</strong>! 🎮⚽</p>
+            <p style="margin:0 0 24px;color:#aaa;font-size:15px;line-height:1.6;">Sua presença está confirmada. Nos vemos em <strong style="color:#fff">13 de junho às 10:00 AM</strong> para o primeiro jogo do Brasil na Copa, com muito videogame e churrasco!</p>
+
+            <!-- Info box -->
+            <table width="100%" cellpadding="0" cellspacing="0" style="background:rgba(0,211,228,.07);border:1px solid rgba(0,211,228,.2);border-radius:6px;margin-bottom:24px;">
+              <tr>
+                <td style="padding:20px 24px;">
+                  <table width="100%" cellpadding="0" cellspacing="0">
+                    <tr>
+                      <td style="text-align:center;">
+                        <p style="margin:0;color:#00d3e4;font-size:32px;font-weight:900;line-height:1;">13.06</p>
+                        <p style="margin:4px 0 0;color:#999;font-size:11px;letter-spacing:2px;text-transform:uppercase;">Às 10:00 AM</p>
+                      </td>
+                      <td style="width:1px;background:rgba(0,211,228,.2);padding:0 20px;"></td>
+                      <td style="text-align:center;">
+                        <p style="margin:0;color:#fff;font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:1px;">🍖 Churrasco de</p>
+                        <p style="margin:2px 0 0;color:#fff;font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:1px;">Confraternização</p>
+                      </td>
+                      <td style="width:1px;background:rgba(0,211,228,.2);padding:0 20px;"></td>
+                      <td style="text-align:center;">
+                        <p style="margin:0;color:#fff;font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:1px;">${pessoas} ${pessoas === 1 ? 'pessoa' : 'pessoas'}</p>
+                        <p style="margin:2px 0 0;color:#00d3e4;font-size:11px;letter-spacing:1px;text-transform:uppercase;">confirmada${pessoas > 1 ? 's' : ''}</p>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+            </table>
+
+            ${obsHtml}
+
+            <p style="margin:0;color:#555;font-size:12px;text-align:center;letter-spacing:1px;text-transform:uppercase;">Vamos jogar e assistir o jogo juntos 🔥</p>
+          </td>
+        </tr>
+
+        <!-- Footer -->
+        <tr>
+          <td style="padding:16px 40px;background:#111;border-top:1px solid #222;text-align:center;">
+            <p style="margin:0;color:#444;font-size:11px;letter-spacing:1px;">© 2025 XPTO inc. — Local sem cautela de armamento</p>
+          </td>
+        </tr>
+
+      </table>
+    </td></tr>
+  </table>
 </body>
-</html>
+</html>`;
+}
+
+// ── Email para o time (Mariana) ─────────────────────────────────────────────
+function emailTime(nome, email, tipo, pessoas, obs, empresa, telefone, campeonato, jogo, jogo_modo) {
+  const now = new Date().toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' });
+
+  return `<!DOCTYPE html>
+<html lang="pt-BR">
+<head><meta charset="UTF-8"/></head>
+<body style="margin:0;padding:0;background:#f5f5f5;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f5f5f5;padding:32px 16px;">
+    <tr><td align="center">
+      <table width="520" cellpadding="0" cellspacing="0" style="background:#fff;border-radius:8px;overflow:hidden;border:1px solid #e0e0e0;">
+
+        <tr>
+          <td style="background:#00d3e4;padding:20px 32px;">
+            <p style="margin:0;color:#000;font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;">XPTO inc. — Nova confirmação de presença</p>
+          </td>
+        </tr>
+
+        <tr>
+          <td style="padding:28px 32px;">
+            <p style="margin:0 0 20px;font-size:16px;color:#111;">Nova inscrição recebida em <strong>${now}</strong></p>
+
+            <table width="100%" cellpadding="0" cellspacing="0" style="border:1px solid #eee;border-radius:6px;overflow:hidden;font-size:14px;">
+              <tr style="background:#fafafa;">
+                <td style="padding:10px 16px;color:#888;font-weight:600;text-transform:uppercase;font-size:11px;letter-spacing:1px;width:40%;">Nome</td>
+                <td style="padding:10px 16px;color:#111;">${nome}</td>
+              </tr>
+              <tr>
+                <td style="padding:10px 16px;color:#888;font-weight:600;text-transform:uppercase;font-size:11px;letter-spacing:1px;border-top:1px solid #eee;">E-mail</td>
+                <td style="padding:10px 16px;color:#111;border-top:1px solid #eee;"><a href="mailto:${email}" style="color:#00a0b0;">${email}</a></td>
+              </tr>
+              <tr style="background:#fafafa;">
+                <td style="padding:10px 16px;color:#888;font-weight:600;text-transform:uppercase;font-size:11px;letter-spacing:1px;border-top:1px solid #eee;">Campeonato 🎮</td>
+                <td style="padding:10px 16px;color:#111;border-top:1px solid #eee;">${campeonato === 'sim' ? '✅ Vai participar' : campeonato === 'nao' ? '👀 Só vai assistir' : '—'}</td>
+              </tr>
+              ${campeonato === 'sim' ? `<tr>
+                <td style="padding:10px 16px;color:#888;font-weight:600;text-transform:uppercase;font-size:11px;letter-spacing:1px;border-top:1px solid #eee;">Jogo</td>
+                <td style="padding:10px 16px;color:#111;border-top:1px solid #eee;">${
+                  jogo === 'cs' ? '🎯 Counter-Strike' : jogo === 'fifa' ? '⚽ FIFA' : '—'
+                }</td>
+              </tr>
+              <tr style="background:#fafafa;">
+                <td style="padding:10px 16px;color:#888;font-weight:600;text-transform:uppercase;font-size:11px;letter-spacing:1px;border-top:1px solid #eee;">Modalidade</td>
+                <td style="padding:10px 16px;color:#111;border-top:1px solid #eee;">${
+                  jogo_modo === 'duo' ? 'Duo (2 jogadores)' :
+                  jogo_modo === 'squad' ? 'Squad (4 jogadores)' :
+                  jogo_modo === 'solo' ? 'Individual' : '—'
+                }</td>
+              </tr>` : ''}
+              <tr>
+                <td style="padding:10px 16px;color:#888;font-weight:600;text-transform:uppercase;font-size:11px;letter-spacing:1px;border-top:1px solid #eee;">Empresa</td>
+                <td style="padding:10px 16px;color:#111;border-top:1px solid #eee;">${empresa || '—'}</td>
+              </tr>
+              <tr>
+                <td style="padding:10px 16px;color:#888;font-weight:600;text-transform:uppercase;font-size:11px;letter-spacing:1px;border-top:1px solid #eee;">Telefone</td>
+                <td style="padding:10px 16px;color:#111;border-top:1px solid #eee;">${telefone || '—'}</td>
+              </tr>
+              <tr style="background:#fafafa;">
+                <td style="padding:10px 16px;color:#888;font-weight:600;text-transform:uppercase;font-size:11px;letter-spacing:1px;border-top:1px solid #eee;">Pessoas</td>
+                <td style="padding:10px 16px;color:#111;border-top:1px solid #eee;">${pessoas}</td>
+              </tr>
+              ${obs ? `<tr>
+                <td style="padding:10px 16px;color:#888;font-weight:600;text-transform:uppercase;font-size:11px;letter-spacing:1px;border-top:1px solid #eee;">Observação</td>
+                <td style="padding:10px 16px;color:#111;border-top:1px solid #eee;">${obs}</td>
+              </tr>` : ''}
+            </table>
+          </td>
+        </tr>
+
+        <tr>
+          <td style="padding:14px 32px;background:#fafafa;border-top:1px solid #eee;text-align:center;">
+            <p style="margin:0;color:#bbb;font-size:11px;">Sistema de confirmações — XPTO inc. Evento 13.06</p>
+          </td>
+        </tr>
+
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`;
+}
+
+// ── Handler principal ───────────────────────────────────────────────────────
+export default async function handler(req) {
+  if (req.method !== 'POST') {
+    return new Response(JSON.stringify({ error: 'Method not allowed' }), { status: 405 });
+  }
+
+  let body;
+  try {
+    body = await req.json();
+  } catch {
+    return new Response(JSON.stringify({ error: 'JSON inválido' }), { status: 400 });
+  }
+
+  const { nome, email, tipo, pessoas = 1, observacoes = '', empresa = '', telefone = '', campeonato = '', jogo = '', jogo_modo = '' } = body;
+
+  if (!nome || !email || !tipo) {
+    return new Response(JSON.stringify({ error: 'Campos obrigatórios faltando.' }), { status: 400 });
+  }
+
+  try {
+    await Promise.all([
+      // 1. E-mail de confirmação para o convidado
+      sendEmail({
+        to: email,
+        subject: `${nome}, sua presença está confirmada! 🎮⚽`,
+        html: emailConvidado(nome, pessoas, observacoes),
+      }),
+      // 2. Notificação para o time
+      sendEmail({
+        to: EMAIL_TEAM,
+        subject: `[Evento 13.06] Nova confirmação: ${nome}`,
+        html: emailTime(nome, email, tipo, pessoas, observacoes, empresa, telefone, campeonato, jogo, jogo_modo),
+      }),
+    ]);
+
+    return new Response(JSON.stringify({ success: true }), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  } catch (err) {
+    console.error(err);
+    return new Response(JSON.stringify({ error: 'Erro ao enviar e-mail. Tente novamente.' }), { status: 500 });
+  }
+}
