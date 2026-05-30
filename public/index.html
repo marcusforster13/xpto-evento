@@ -19,8 +19,7 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
-      padding: 24px 16px;
+      padding: 32px 16px 80px 16px;
       overflow-y: auto;
     }
 
@@ -176,6 +175,7 @@
     .col-right {
       grid-column: 2;
       grid-row: 1 / 4;
+      align-self: start;
     }
 
     .card {
@@ -184,8 +184,6 @@
       border: 1px solid rgba(0,211,228,.2);
       border-radius: 8px;
       padding: 20px 24px;
-      max-height: calc(100vh - 48px);
-      overflow-y: auto;
     }
     .card-title {
       font-family: 'Barlow Condensed', sans-serif;
@@ -334,17 +332,32 @@
     .game-opt.checked .game-radio::after { content: ''; width: 5px; height: 5px; background: #000; border-radius: 50%; }
     .game-opt.checked { color: #fff; }
 
-    
+    /* Barra fixa de confirmação */
+    .confirm-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 12px 24px;
+      background: rgba(10,10,10,.95);
+      border-top: 1px solid rgba(0,211,228,.25);
+      backdrop-filter: blur(8px);
+      z-index: 100;
+    }
+
+    .submit-btn {
       width: 100%;
-      margin-top: 14px;
-      padding: 14px;
+      max-width: 900px;
+      display: block;
+      margin: 0 auto;
+      padding: 16px;
       background: #00d3e4;
       border: none;
       border-radius: 4px;
       color: #000;
       font-family: 'Barlow Condensed', sans-serif;
       font-weight: 900;
-      font-size: 15px;
+      font-size: 16px;
       letter-spacing: 3px;
       text-transform: uppercase;
       cursor: pointer;
@@ -551,14 +564,18 @@
             </div>
           </div>
 
-          <button class="submit-btn" id="submit-btn" disabled onclick="enviar()">
-            Confirmar presença
-          </button>
         </div>
       </div>
     </div>
 
   </div><!-- .page -->
+
+  <!-- Barra fixa de confirmação -->
+  <div class="confirm-bar">
+    <button class="submit-btn" id="submit-btn" disabled onclick="enviar()">
+      Confirmar presença
+    </button>
+  </div>
 
   <script>
     var tipoSel = '';
