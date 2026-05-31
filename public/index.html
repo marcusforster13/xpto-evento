@@ -506,11 +506,24 @@
 
           <!-- People count -->
           <div class="field">
-            <label>Quantas pessoas vão com você?</label>
-            <div class="people-counter">
-              <button class="people-btn" onclick="changePeople(-1)">−</button>
-              <div class="people-num" id="people-num">1</div>
-              <button class="people-btn" onclick="changePeople(1)">+</button>
+            <label>Quem vai com você?</label>
+            <div class="field-row" style="margin-bottom:0; gap:10px;">
+              <div style="display:flex;flex-direction:column;gap:5px;">
+                <div style="font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:#999;">👤 Adultos</div>
+                <div class="people-counter">
+                  <button class="people-btn" onclick="changeAdultos(-1)">−</button>
+                  <div class="people-num" id="adultos-num">1</div>
+                  <button class="people-btn" onclick="changeAdultos(1)">+</button>
+                </div>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:5px;">
+                <div style="font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:#999;">🧒 Crianças</div>
+                <div class="people-counter">
+                  <button class="people-btn" onclick="changeCriancas(-1)">−</button>
+                  <div class="people-num" id="criancas-num">0</div>
+                  <button class="people-btn" onclick="changeCriancas(1)">+</button>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -582,11 +595,17 @@
     var campSel = '';
     var gameSel = '';      // 'cs' ou 'fifa'
     var gameMode = '';     // 'duo', 'squad', 'solo'
-    var numPessoas = 1;
+    var numAdultos = 1;
+    var numCriancas = 0;
 
-    function changePeople(delta) {
-      numPessoas = Math.max(1, Math.min(20, numPessoas + delta));
-      document.getElementById('people-num').textContent = numPessoas;
+    function changeAdultos(delta) {
+      numAdultos = Math.max(1, Math.min(20, numAdultos + delta));
+      document.getElementById('adultos-num').textContent = numAdultos;
+    }
+
+    function changeCriancas(delta) {
+      numCriancas = Math.max(0, Math.min(20, numCriancas + delta));
+      document.getElementById('criancas-num').textContent = numCriancas;
     }
 
     function selectTipo(el) {
@@ -681,7 +700,8 @@
             nome: nome,
             email: email,
             tipo: tipoSel,
-            pessoas: numPessoas,
+            adultos: numAdultos,
+            criancas: numCriancas,
             empresa: empresa,
             telefone: telefone,
             campeonato: campSel,
